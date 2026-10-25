@@ -314,6 +314,15 @@ def atomic_write_text(path: Path, text: str, newline: str = "") -> None:
                 shutil.copymode(path, tmp)
             except OSError:  # pragma: no cover - platform dependent
                 pass
+        else:
+            # mkstemp creates 0600; a new project file should be world-readable
+            # like any other file the user creates (respecting their umask).
+            mask = os.umask(0)
+            os.umask(mask)
+            try:
+                os.chmod(tmp, 0o666 & ~mask)
+            except OSError:  # pragma: no cover - platform dependent
+                pass
         os.replace(tmp, path)
     except BaseException:
         tmp.unlink(missing_ok=True)

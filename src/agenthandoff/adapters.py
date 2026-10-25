@@ -231,7 +231,8 @@ def _insert(text: str, block: str, placement: str, newline: str) -> str:
         head, tail = text[:offset], text[offset:]
         if head and not head.endswith(("\n", "\r")):
             head += newline
-        return head + block + newline + tail.lstrip("\r\n")
+        # `tail` is user content and is appended untouched (byte-for-byte).
+        return head + block + newline + tail
 
     body = text if text.endswith(("\n", "\r")) else text + newline
     return body + newline + block + newline
@@ -350,8 +351,16 @@ def _read_existing(path: Path) -> str | None:
         raise AdapterError(f"'{path}' ada tetapi bukan file — export dibatalkan.")
     try:
         # newline="" keeps CRLF files CRLF (no silent whole-file rewrite).
-        with open(path, encoding="utf-8", errors="replace", newline="") as handle:
+        # Decoding is strict on purpose: replacing undecodable bytes would
+        # silently corrupt a file the user owns.
+        with open(path, encoding="utf-8", newline="") as handle:
             return handle.read()
+    except UnicodeDecodeError as exc:
+        raise AdapterError(
+            f"{path} bukan file UTF-8 (byte tidak valid di offset {exc.start}).\n"
+            "  Export dibatalkan agar isi file tidak rusak.\n"
+            "  Ubah encoding-nya ke UTF-8, atau pilih target lain (mis. --to gemini)."
+        ) from exc
     except OSError as exc:
         raise AdapterError(f"Tidak bisa membaca {path}: {exc}") from exc
 

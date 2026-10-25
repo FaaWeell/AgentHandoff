@@ -339,6 +339,12 @@ class TestStorage:
         assert target.read_text(encoding="utf-8") == "two\n"
 
     @pytest.mark.skipif(os.name == "nt", reason="POSIX permission bits")
+    def test_atomic_write_new_file_is_readable(self, tmp_path: Path) -> None:
+        target = tmp_path / "new.md"
+        atomic_write_text(target, "hello\n")
+        assert stat.S_IMODE(target.stat().st_mode) & 0o444 == 0o444
+
+    @pytest.mark.skipif(os.name == "nt", reason="POSIX permission bits")
     def test_atomic_write_preserves_permissions(self, tmp_path: Path) -> None:
         target = tmp_path / "file.md"
         target.write_text("one\n", encoding="utf-8")

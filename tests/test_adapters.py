@@ -168,6 +168,13 @@ class TestMergeBlock:
             merge_block(f"{BEGIN_MARKER}\nno end\n", "x", TARGETS["claude"])
         assert "agent-handoff:end" in str(excinfo.value)
 
+    def test_leading_blank_lines_are_preserved_exactly(self) -> None:
+        adapter = Adapter(name="t", path="t.md", description="", placement="top")
+        block = f"{BEGIN_MARKER}\nhi\n{END_MARKER}\n"
+        existing = "\n\n# Title\nbody\n"
+        result = merge_block(existing, block, adapter)
+        assert result.endswith(existing)  # user content is byte-identical
+
     def test_crlf_input_keeps_crlf(self) -> None:
         block = f"{BEGIN_MARKER}\nhi\n{END_MARKER}\n"
         result = merge_block("line1\r\nline2\r\n", block, TARGETS["claude"])
@@ -312,6 +319,17 @@ class TestExportTargets:
         with pytest.raises(AdapterError):
             export_target(project, session, TARGETS["claude"])
         assert path.read_text(encoding="utf-8") == original
+
+    def test_non_utf8_file_is_not_mangled(self, project: Path, session) -> None:
+        path = _target_path(project, "claude")
+        original = "# Règles\n".encode("latin-1")
+        path.write_bytes(original)
+
+        with pytest.raises(AdapterError) as excinfo:
+            export_target(project, session, TARGETS["claude"])
+
+        assert "UTF-8" in str(excinfo.value)
+        assert path.read_bytes() == original  # untouched, not "repaired"
 
     def test_target_path_is_a_directory_raises(self, project: Path, session) -> None:
         path = _target_path(project, "gemini")
