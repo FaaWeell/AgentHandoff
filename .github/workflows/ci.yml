@@ -1,0 +1,162 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install --upgrade pip ruff
+      - name: ruff check
+        run: ruff check src tests examples --output-format=concise
+      - name: ruff format --check (informational)
+        continue-on-error: true
+        run: ruff format --check src tests
+
+  test:
+    name: test (${{ matrix.os }} / py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install package + test tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Check the console entry point is importable
+        run: handoff --version
+
+      - name: Run tests with coverage
+        run: pytest -q --cov=agenthandoff --cov-report=term-missing --cov-report=xml
+
+      - name: Coverage gates (core >= 80%)
+        if: matrix.os == 'ubuntu-latest' && matrix.python == '3.11'
+        run: |
+          coverage report --fail-under=80
+          coverage report --include='*/core.py,*/adapters.py,*/importer.py' --fail-under=80
+
+      - name: Upload coverage artifact
+        if: matrix.os == 'ubuntu-latest' && matrix.python == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+          if-no-files-found: ignore
+
+  build:
+    name: build sdist + wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build distributions
+        run: |
+          python -m pip install --upgrade pip build twine
+          python -m build
+
+      - name: Validate metadata
+        run: python -m twine check dist/*
+
+      - name: Install the wheel in a clean venv and smoke-test it
+        run: |
+          python -m venv /tmp/clean
+          /tmp/clean/bin/python -m pip install --quiet dist/*.whl
+          /tmp/clean/bin/handoff --version
+          mkdir -p /tmp/demo-repo && cd /tmp/demo-repo
+          git init -q .
+          /tmp/clean/bin/handoff capture --goal "smoke test" --from claude --todo "ship it"
+          /tmp/clean/bin/handoff export --to all --quiet
+          test -f AGENTS.md && test -f CLAUDE.md && test -f .agent-handoff/session.json
+          /tmp/clean/bin/handoff show | head -5
+
+      - name: Upload distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  dogfood:
+    name: dogfood (repo uses AgentHandoff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install
+        run: python -m pip install -e .
+
+      - name: Session file must be valid for the current code
+        run: |
+          handoff show --json > /dev/null
+          handoff status --quiet
+          handoff show | head -5
+
+      - name: Every committed export has exactly one well-formed block
+        run: |
+          python - <<'PY'
+          import pathlib, sys
+          from agenthandoff.adapters import TARGETS, BEGIN_MARKER, END_MARKER, find_block
+          problems = []
+          for adapter in TARGETS.values():
+              path = pathlib.Path(adapter.path)
+              if not path.is_file():
+                  problems.append(f"missing: {path}")
+                  continue
+              text = path.read_text(encoding="utf-8")
+              if adapter.fully_generated:
+                  continue
+              block = find_block(text)
+              if block is None or block.count != 1:
+                  problems.append(f"{path}: expected 1 block, found {None if block is None else block.count}")
+              if text.count(BEGIN_MARKER) != 1 or text.count(END_MARKER) != 1:
+                  problems.append(f"{path}: marker count is not 1/1")
+          if problems:
+              print("\n".join(problems))
+              sys.exit(1)
+          print("all committed exports are well-formed")
+          PY
+
+      - name: Export is idempotent (verified in a scratch copy)
+        run: |
+          rm -rf /tmp/dogfood && mkdir -p /tmp/dogfood
+          tar -cf - --exclude=.git . | tar -xf - -C /tmp/dogfood
+          cd /tmp/dogfood
+          handoff export --to all --quiet
+          find . -type f \( -name '*.md' -o -name '*.mdc' \) -print0 | sort -z | xargs -0 sha256sum > /tmp/first.txt
+          handoff export --to all --quiet
+          find . -type f \( -name '*.md' -o -name '*.mdc' \) -print0 | sort -z | xargs -0 sha256sum > /tmp/second.txt
+          diff /tmp/first.txt /tmp/second.txt && echo "export is idempotent"

@@ -1,0 +1,24 @@
+# Sample chat/log export — paste your own agent conversation here.
+# AgentHandoff reads lines that START with a label; everything else is ignored.
+#
+# English labels:  Decision:  TODO:  Done:  Note:
+# Indonesian:      Keputusan: Selanjutnya: Selesai: Catatan:
+# (Also accepted: Berikutnya:, Rencana:, Sudah:, Next steps:)
+
+Session with Claude Code — 2026-10-25
+
+Decision: Pakai JWT :: stateless, cocok untuk API
+Decision: Pakai bcrypt :: standar industri untuk hashing password
+Keputusan: Refresh token pakai rotating strategy :: lebih aman dari token statis
+
+Done: Endpoint /login selesai
+Selesai: Setup struktur project
+
+TODO: Tambahkan refresh token
+Selanjutnya: Tulis test untuk /login
+- Berikutnya: Validasi input form
+
+Catatan: Deploy target Railway, review hari Senin
+
+Human: sounds good, but what about rate limiting?
+Assistant: Good point — I noted it as a follow-up.

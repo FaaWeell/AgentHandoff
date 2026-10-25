@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Question / usage help
+    url: https://github.com/FaaWeell/AgentHandoff/discussions
+    about: Ask how to use AgentHandoff, share your workflow, or show your exported setup.
+  - name: 🔐 Security or data-loss report
+    url: https://github.com/FaaWeell/AgentHandoff/security/advisories/new
+    about: Report privately if a file could be damaged. Please do not open a public issue first.
