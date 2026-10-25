@@ -4,7 +4,7 @@
   "goal": "Implementasi lengkap MVP AgentHandoff v0.1.0 sesuai prd.md + plan.md (F1-F8, docs, CI, dogfooding)",
   "source_agent": "claude",
   "created_at": "2026-10-25T03:09:38+00:00",
-  "updated_at": "2026-10-25T03:09:38+00:00",
+  "updated_at": "2026-10-25T03:10:58+00:00",
   "decisions": [
     {
       "text": "Satu sumber kebenaran: .agent-handoff/session.json, semua output di-generate darinya",
@@ -49,27 +49,13 @@
   "git": {
     "is_repo": true,
     "branch": "arena/b5425e24-agenthandoff",
-    "last_commit": "f3683d0 Initial commit",
-    "changed_files": [
-      "README.md",
-      ".github/",
-      ".gitignore",
-      "CHANGELOG.md",
-      "CONTRIBUTING.md",
-      "LICENSE",
-      "README.id.md",
-      "docs/",
-      "examples/",
-      "plan.md",
-      "prd.md",
-      "pyproject.toml",
-      "src/",
-      "tests/"
-    ],
-    "changed_count": 14,
+    "last_commit": "f7a3c45 feat: implement AgentHandoff v0.1.0 MVP",
+    "changed_files": [],
+    "changed_count": 0,
     "recent_commits": [
+      "f7a3c45 feat: implement AgentHandoff v0.1.0 MVP",
       "f3683d0 Initial commit"
     ],
-    "diff_stat": " README.md | 226 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n 1 file changed, 226 insertions(+)"
+    "diff_stat": ""
   }
 }

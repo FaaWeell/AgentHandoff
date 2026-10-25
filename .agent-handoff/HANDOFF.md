@@ -6,7 +6,7 @@
 | --- | --- |
 | Project | `AgentHandoff` |
 | Last agent | claude |
-| Updated | 2026-10-25T03:09:38+00:00 |
+| Updated | 2026-10-25T03:10:58+00:00 |
 | Created | 2026-10-25T03:09:38+00:00 |
 
 ## 🎯 Goal
@@ -16,30 +16,11 @@ Implementasi lengkap MVP AgentHandoff v0.1.0 sesuai prd.md + plan.md (F1-F8, doc
 ## 🌿 Git state
 
 - **Branch:** `arena/b5425e24-agenthandoff`
-- **Last commit:** `f3683d0 Initial commit`
-- **Changed files:** 14
-  - `README.md`
-  - `.github/`
-  - `.gitignore`
-  - `CHANGELOG.md`
-  - `CONTRIBUTING.md`
-  - `LICENSE`
-  - `README.id.md`
-  - `docs/`
-  - `examples/`
-  - `plan.md`
-  - `prd.md`
-  - `pyproject.toml`
-  - `src/`
-  - `tests/`
+- **Last commit:** `f7a3c45 feat: implement AgentHandoff v0.1.0 MVP`
+- **Changed files:** none (working tree clean)
 - **Recent commits:**
+  - `f7a3c45 feat: implement AgentHandoff v0.1.0 MVP`
   - `f3683d0 Initial commit`
-- **Diff stat:**
-
-```text
-README.md | 226 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 226 insertions(+)
-```
 
 ## ✅ Done
 
