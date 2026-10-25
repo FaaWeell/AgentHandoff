@@ -1,0 +1,47 @@
+name: ✨ Feature request
+description: Suggest a capability, a flag, or a workflow improvement.
+title: "feat: "
+labels: ["enhancement", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Reminder of the product principles: local-first, agent-agnostic,
+        zero-config, plain text, never destructive, simple over complete.
+        Features that require a server or a default LLM call are out of scope.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you hitting?
+      description: Describe the workflow, not just the solution.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      placeholder: |
+        $ handoff capture --from-history claude
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Which part does this touch?
+      options:
+        - capture / merge
+        - export / adapters
+        - show / status
+        - import-log / scan-todos
+        - docs
+        - packaging / CI
+    validations:
+      required: true

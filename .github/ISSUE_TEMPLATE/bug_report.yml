@@ -1,0 +1,65 @@
+name: 🐛 Bug report
+description: Something did not work as expected — including any damage to an existing file.
+title: "bug: "
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. **If AgentHandoff removed or changed content you did
+        not put inside the markers, say so here first — that is a P0.**
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Include the exact command you ran (redact private paths).
+      placeholder: |
+        $ handoff export --to codex
+        ...output...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect instead?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: data-loss
+    attributes:
+      label: Did it modify or delete content you wrote outside the handoff block?
+      options:
+        - "No"
+        - "Yes (this is a P0)"
+        - "Not sure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: session
+    attributes:
+      label: Relevant part of .agent-handoff/session.json
+      render: json
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: |
+        handoff --version: 0.1.0
+        python -V: Python 3.11.2
+        OS: Ubuntu 24.04 / macOS 15 / Windows 11
+        git --version: git 2.43
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I ran the latest version (`pip install -U agenthandoff`).
+        - label: I searched existing issues.

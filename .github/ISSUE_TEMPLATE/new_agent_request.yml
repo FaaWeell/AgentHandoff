@@ -1,0 +1,45 @@
+name: 🤖 New agent support
+description: Ask for a new agent target, or volunteer to add one (a perfect first PR).
+title: "agent: support "
+labels: ["new-agent-request", "good first issue"]
+body:
+  - type: input
+    id: agent
+    attributes:
+      label: Agent name
+      placeholder: Zed / Aider / Amp / …
+    validations:
+      required: true
+
+  - type: input
+    id: file
+    attributes:
+      label: Which file does it read at startup?
+      description: The exact path, e.g. `ZED.md` or `.zed/rules/agent-handoff.md`.
+      placeholder: AGENT.md
+    validations:
+      required: true
+
+  - type: input
+    id: docs
+    attributes:
+      label: Link to the official documentation for that context file
+    validations:
+      required: true
+
+  - type: textarea
+    id: format
+    attributes:
+      label: Format requirements
+      description: |
+        Anything the file needs beyond plain Markdown: YAML frontmatter, a
+        required heading, a maximum length, etc.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contribution
+      options:
+        - label: I want to open the PR myself (one entry in `TARGETS` + one test row).

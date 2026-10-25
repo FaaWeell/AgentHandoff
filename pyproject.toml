@@ -1,0 +1,77 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agenthandoff"
+version = "0.1.0"
+description = "Never lose context when switching AI coding agents. Capture a session and export it to CLAUDE.md, AGENTS.md, GEMINI.md and more."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "AgentHandoff contributors" }]
+keywords = [
+    "ai-coding-agent",
+    "claude-code",
+    "codex",
+    "gemini-cli",
+    "context",
+    "handoff",
+    "developer-tools",
+    "cli",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: Utilities",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4", "pytest-cov>=4.1", "ruff>=0.6"]
+
+[project.scripts]
+handoff = "agenthandoff.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/FaaWeell/AgentHandoff"
+Repository = "https://github.com/FaaWeell/AgentHandoff"
+Issues = "https://github.com/FaaWeell/AgentHandoff/issues"
+Changelog = "https://github.com/FaaWeell/AgentHandoff/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+agenthandoff = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["error::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+exclude = [".venv", "build", "dist", ".git"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "ISC", "C4", "RUF"]
+ignore = ["RUF001", "RUF002", "RUF003"]  # non-ASCII punctuation is intentional
+
+[tool.coverage.run]
+source = ["agenthandoff"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true

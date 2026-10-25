@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "project": "AgentHandoff",
+  "goal": "Implementasi lengkap MVP AgentHandoff v0.1.0 sesuai prd.md + plan.md (F1-F8, docs, CI, dogfooding)",
+  "source_agent": "claude",
+  "created_at": "2026-10-25T03:09:38+00:00",
+  "updated_at": "2026-10-25T03:09:38+00:00",
+  "decisions": [
+    {
+      "text": "Satu sumber kebenaran: .agent-handoff/session.json, semua output di-generate darinya",
+      "reason": "menghindari drift antar format agent"
+    },
+    {
+      "text": "Git dipanggil via subprocess, bukan library",
+      "reason": "core tetap 0 dependensi dan perilaku sama dengan git pengguna"
+    },
+    {
+      "text": "Adapter = data (dict target -> path) + satu penulis blok generik",
+      "reason": "menambah agent baru cukup satu baris, ramah kontributor pertama"
+    },
+    {
+      "text": "Marker HTML comment <!-- agent-handoff:begin/end --> dengan replace, bukan append",
+      "reason": "export idempotent dan konten pengguna di luar blok aman"
+    },
+    {
+      "text": "Write atomik (temp -> fsync -> os.replace) + newline=\"\"",
+      "reason": "file CRLF tetap CRLF dan tidak ada file setengah tertulis"
+    }
+  ],
+  "todos": [
+    "Publish v0.1.0 ke PyPI lalu tag v0.1.0 + GitHub Release",
+    "Rekam GIF demo <=15 detik dari examples/demo.sh untuk README",
+    "Buka >=5 issue good first issue (mostly adapter requests) sebelum launch",
+    "v0.2: wizard init interaktif + status yang menampilkan sync state per agent",
+    "v0.3: parser riwayat sesi Claude Code (~/.claude/projects/**.jsonl)",
+    "Launch: X/thread, dev.to, Reddit, Show HN sesuai docs/LAUNCH.md"
+  ],
+  "done": [
+    "core.py: Session dataclass, merge semantik (done menghapus todo, tanpa duplikat), save/load JSON, render HANDOFF.md",
+    "gitutil.py: snapshot branch/last commit/changed files/10 commit/diff stat, aman di folder non-git tanpa git binary",
+    "adapters.py: 7 target export (claude, codex/agents, gemini, cursor, copilot, windsurf, markdown) + alias + --to all",
+    "cli.py: capture, export, show, status, import-log, scan-todos, init dengan --path/--quiet dan pesan error ramah",
+    "importer.py: parser log EN + ID dan scanner TODO/FIXME (cap 50, skip node_modules/.git/.venv)",
+    "Test suite 208 test hijau, coverage 94% (gerbang 80%)",
+    "Docs: README EN + ID, CONTRIBUTING, CHANGELOG, docs/FORMAT.md, docs/ROADMAP.md, docs/LAUNCH.md, examples",
+    "CI GitHub Actions: 3 OS x Python 3.11/3.12/3.13, coverage gate, build+smoke test wheel, dogfood job"
+  ],
+  "notes": "Dogfooding: repo ini memakai AgentHandoff sendiri. Setelah mengubah session, jalankan 'handoff export --to all' agar file agent di root repo ikut ter-update.",
+  "git": {
+    "is_repo": true,
+    "branch": "arena/b5425e24-agenthandoff",
+    "last_commit": "f3683d0 Initial commit",
+    "changed_files": [
+      "README.md",
+      ".github/",
+      ".gitignore",
+      "CHANGELOG.md",
+      "CONTRIBUTING.md",
+      "LICENSE",
+      "README.id.md",
+      "docs/",
+      "examples/",
+      "plan.md",
+      "prd.md",
+      "pyproject.toml",
+      "src/",
+      "tests/"
+    ],
+    "changed_count": 14,
+    "recent_commits": [
+      "f3683d0 Initial commit"
+    ],
+    "diff_stat": " README.md | 226 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n 1 file changed, 226 insertions(+)"
+  }
+}
