@@ -1,61 +1,89 @@
 {
   "schema_version": 1,
   "project": "AgentHandoff",
-  "goal": "Implementasi lengkap MVP AgentHandoff v0.1.0 sesuai prd.md + plan.md (F1-F8, docs, CI, dogfooding)",
+  "goal": "Ship AgentHandoff v0.1.0: capture a coding session once, export it to every AI agent's native context file",
   "source_agent": "claude",
-  "created_at": "2026-10-25T03:09:38+00:00",
-  "updated_at": "2026-10-25T03:10:58+00:00",
+  "created_at": "2026-10-25T03:39:13+00:00",
+  "updated_at": "2026-10-25T03:39:43+00:00",
   "decisions": [
     {
-      "text": "Satu sumber kebenaran: .agent-handoff/session.json, semua output di-generate darinya",
-      "reason": "menghindari drift antar format agent"
+      "text": "One source of truth in .agent-handoff/session.json, every output is generated from it",
+      "reason": "the formats cannot drift apart"
     },
     {
-      "text": "Git dipanggil via subprocess, bukan library",
-      "reason": "core tetap 0 dependensi dan perilaku sama dengan git pengguna"
+      "text": "Call git through subprocess instead of a library",
+      "reason": "keeps the core dependency-free and behaves like the user's own git"
     },
     {
-      "text": "Adapter = data (dict target -> path) + satu penulis blok generik",
-      "reason": "menambah agent baru cukup satu baris, ramah kontributor pertama"
+      "text": "An adapter is data (target name -> path) plus one generic block writer",
+      "reason": "adding an agent is a one-line change for a first-time contributor"
     },
     {
-      "text": "Marker HTML comment <!-- agent-handoff:begin/end --> dengan replace, bukan append",
-      "reason": "export idempotent dan konten pengguna di luar blok aman"
+      "text": "Marker-delimited HTML comment block, replaced in place instead of appended",
+      "reason": "exports stay idempotent and user text outside the block is safe"
     },
     {
-      "text": "Write atomik (temp -> fsync -> os.replace) + newline=\"\"",
-      "reason": "file CRLF tetap CRLF dan tidak ada file setengah tertulis"
+      "text": "Atomic writes (temp file, fsync, os.replace) with newline disabled",
+      "reason": "CRLF files stay CRLF and no half-written file is possible"
+    },
+    {
+      "text": "English-only CLI output and README, Indonesian and English import labels",
+      "reason": "global audience, the importer still accepts both"
     }
   ],
   "todos": [
-    "Publish v0.1.0 ke PyPI lalu tag v0.1.0 + GitHub Release",
-    "Rekam GIF demo <=15 detik dari examples/demo.sh untuk README",
-    "Buka >=5 issue good first issue (mostly adapter requests) sebelum launch",
-    "v0.2: wizard init interaktif + status yang menampilkan sync state per agent",
-    "v0.3: parser riwayat sesi Claude Code (~/.claude/projects/**.jsonl)",
-    "Launch: X/thread, dev.to, Reddit, Show HN sesuai docs/LAUNCH.md"
+    "Publish v0.1.0 to PyPI, then tag v0.1.0 and create the GitHub Release",
+    "Record the 15 second demo GIF from examples/demo.sh for the README",
+    "Open at least 5 good first issues (mostly agent adapter requests) before launch",
+    "Verify US-5 by hand with 3 real agents: goal, done and next steps answered from the exported file only",
+    "Launch on X, dev.to, Reddit and Show HN following docs/LAUNCH.md",
+    "v0.2: interactive init, status that reports per-agent sync state"
   ],
   "done": [
-    "core.py: Session dataclass, merge semantik (done menghapus todo, tanpa duplikat), save/load JSON, render HANDOFF.md",
-    "gitutil.py: snapshot branch/last commit/changed files/10 commit/diff stat, aman di folder non-git tanpa git binary",
-    "adapters.py: 7 target export (claude, codex/agents, gemini, cursor, copilot, windsurf, markdown) + alias + --to all",
-    "cli.py: capture, export, show, status, import-log, scan-todos, init dengan --path/--quiet dan pesan error ramah",
-    "importer.py: parser log EN + ID dan scanner TODO/FIXME (cap 50, skip node_modules/.git/.venv)",
-    "Test suite 208 test hijau, coverage 94% (gerbang 80%)",
-    "Docs: README EN + ID, CONTRIBUTING, CHANGELOG, docs/FORMAT.md, docs/ROADMAP.md, docs/LAUNCH.md, examples",
-    "CI GitHub Actions: 3 OS x Python 3.11/3.12/3.13, coverage gate, build+smoke test wheel, dogfood job"
+    "core.py: Session dataclass, merge rules (done removes the matching todo, no duplicates), JSON storage, HANDOFF.md renderer",
+    "gitutil.py: branch, last commit, changed files, 10 recent commits, diff stat, safe in non-git folders and without a git binary",
+    "adapters.py: 7 export targets (claude, codex/agents, gemini, cursor, copilot, windsurf, markdown), aliases, --to all",
+    "cli.py: capture, export, show, status, import-log, scan-todos, init with --path/--quiet and readable errors",
+    "importer.py: log parser for English and Indonesian labels, TODO/FIXME scanner capped at 50 items",
+    "Test suite: 211 tests passing, about 94 percent coverage, ruff clean",
+    "Docs: README (English only), CONTRIBUTING, CHANGELOG, docs/FORMAT.md, docs/ROADMAP.md, docs/LAUNCH.md, docs/TESTING.md, examples",
+    "CI: ruff, 3 OS x Python 3.11/3.12/3.13, coverage gate, wheel build with clean-venv smoke test, dogfood job",
+    "Removed the Indonesian README and translated all user-facing output and docs to English"
   ],
-  "notes": "Dogfooding: repo ini memakai AgentHandoff sendiri. Setelah mengubah session, jalankan 'handoff export --to all' agar file agent di root repo ikut ter-update.",
+  "notes": "This repo uses AgentHandoff on itself. After changing the session, run 'handoff export --to all' so the agent files at the repo root stay in sync. Manual verification steps live in docs/TESTING.md.",
   "git": {
     "is_repo": true,
-    "branch": "arena/b5425e24-agenthandoff",
-    "last_commit": "f7a3c45 feat: implement AgentHandoff v0.1.0 MVP",
-    "changed_files": [],
-    "changed_count": 0,
-    "recent_commits": [
-      "f7a3c45 feat: implement AgentHandoff v0.1.0 MVP",
-      "f3683d0 Initial commit"
+    "branch": "arena/c6d5b314-agenthandoff",
+    "last_commit": "99a556e Merge pull request #1 from FaaWeell/arena/b5425e24-agenthandoff",
+    "changed_files": [
+      ".agent-handoff/HANDOFF.md",
+      ".agent-handoff/session.json",
+      ".cursor/rules/agent-handoff.mdc",
+      ".github/copilot-instructions.md",
+      ".windsurf/rules/agent-handoff.md",
+      "AGENTS.md",
+      "CHANGELOG.md",
+      "CLAUDE.md",
+      "GEMINI.md",
+      "README.id.md",
+      "README.md",
+      "docs/FORMAT.md",
+      "docs/release-notes-v0.1.0.md",
+      "examples/demo.sh",
+      "examples/sample-HANDOFF.md",
+      "examples/sample-log.txt",
+      "src/agenthandoff/adapters.py",
+      "src/agenthandoff/cli.py",
+      "src/agenthandoff/core.py",
+      "tests/test_adapters.py",
+      "tests/test_cli.py",
+      "tests/test_core.py",
+      "docs/TESTING.md"
     ],
-    "diff_stat": ""
+    "changed_count": 23,
+    "recent_commits": [
+      "99a556e Merge pull request #1 from FaaWeell/arena/b5425e24-agenthandoff"
+    ],
+    "diff_stat": " .agent-handoff/HANDOFF.md        |  94 ++++++++++-----\n .agent-handoff/session.json      |  92 +++++++++------\n .cursor/rules/agent-handoff.mdc  |  51 ++++----\n .github/copilot-instructions.md  |  51 ++++----\n .windsurf/rules/agent-handoff.md |  51 ++++----\n AGENTS.md                        |  51 ++++----\n CHANGELOG.md                     |  12 +-\n CLAUDE.md                        |  51 ++++----\n GEMINI.md                        |  51 ++++----\n README.id.md                     |  86 --------------\n README.md                        | 248 +++++++++++++++++++++------------------\n docs/FORMAT.md                   |  12 +-\n docs/release-notes-v0.1.0.md     |   4 +-\n examples/demo.sh                 |  16 +--\n examples/sample-HANDOFF.md       |  30 ++---\n examples/sample-log.txt          |  36 +++---\n src/agenthandoff/adapters.py     |  31 ++---\n src/agenthandoff/cli.py          | 126 ++++++++++----------\n src/agenthandoff/core.py         |  22 ++--\n tests/test_adapters.py           |   2 +-\n tests/test_cli.py                |  30 ++---\n tests/test_core.py               |   6 +-\n 22 files changed, 594 insertions(+), 559 deletions(-)"
   }
 }

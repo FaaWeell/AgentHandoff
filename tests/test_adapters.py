@@ -336,7 +336,7 @@ class TestExportTargets:
         path.mkdir(parents=True)
         with pytest.raises(AdapterError) as excinfo:
             export_target(project, session, TARGETS["gemini"])
-        assert "bukan file" in str(excinfo.value)
+        assert "is not a file" in str(excinfo.value)
 
     def test_crlf_file_stays_crlf(self, project: Path, session) -> None:
         path = _target_path(project, "windsurf")

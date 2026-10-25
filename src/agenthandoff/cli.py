@@ -90,11 +90,15 @@ def echo(message: str = "", *, err: bool = False) -> None:
 # --------------------------------------------------------------------------- #
 # Helpers
 # --------------------------------------------------------------------------- #
+def _plural(count: int, word: str, suffix: str = "s") -> str:
+    return f"{count} {word}" if count == 1 else f"{count} {word}{suffix}"
+
+
 def _fmt_counts(session: Session) -> str:
     counts = session.counts()
     return (
-        f"{counts['done']} done · {counts['decisions']} decisions · "
-        f"{counts['todos']} todo"
+        f"{counts['done']} done · {_plural(counts['decisions'], 'decision')} · "
+        f"{_plural(counts['todos'], 'todo')}"
     )
 
 
@@ -106,8 +110,8 @@ def _require_session(root: Path) -> Session:
     session = load_session(root)
     if session is None:
         raise SessionError(
-            "Belum ada handoff untuk project ini.\n"
-            f"  Mulai dengan: {PROG} capture --goal \"apa yang sedang dikerjakan\" --from claude"
+            "No handoff found for this project.\n"
+            f"  Start with: {PROG} capture --goal \"what you are working on\" --from claude"
         )
     return session
 
@@ -129,7 +133,7 @@ def cmd_capture(args: argparse.Namespace) -> int:
     )
 
     if not args.quiet:
-        echo(ok(f"Handoff diperbarui di {root}"))
+        echo(ok(f"Handoff updated in {root}"))
         echo(f"  {SESSION_DIR}/session.json  {ARROW} {_fmt_counts(session)}")
         echo(f"  {SESSION_DIR}/HANDOFF.md    {ARROW} regenerated")
         git = session.git or {}
@@ -138,15 +142,15 @@ def cmd_capture(args: argparse.Namespace) -> int:
             changed = git.get("changed_count") or 0
             echo(f"  git: {branch} · {changed} changed file(s)")
         else:
-            echo(warn("Bukan git repository — snapshot git dilewati."))
+            echo(warn("Not a git repository - git snapshot skipped."))
         if not session.goal and not session.todos:
             echo(
                 warn(
-                    "Session masih kosong. Tambahkan konteks dengan "
-                    "--goal/--todo/--decision, atau " + f"{PROG} import-log <file>."
+                    "The session is still empty. Add context with "
+                    "--goal/--todo/--decision, or run " + f"{PROG} import-log <file>."
                 )
             )
-        echo(f"  Lanjut: {PROG} export --to codex   (atau --to all)")
+        echo(f"  Next: {PROG} export --to codex   (or --to all)")
     return EXIT_OK
 
 
@@ -157,17 +161,16 @@ def cmd_export(args: argparse.Namespace) -> int:
     results = export_targets(root, session, adapters)
 
     if not args.quiet:
-        echo(ok(f"Export selesai ({len(results)} target)"))
+        echo(ok(f"Export finished ({len(results)} target(s))"))
         for result in results:
             try:
                 shown = result.path.relative_to(root).as_posix()
             except ValueError:  # pragma: no cover - defensive
                 shown = result.path.as_posix()
             echo(f"  {shown:<45} {result.status}")
-        echo(f"  Sumber kebenaran: {SESSION_DIR}/session.json")
-        echo(
-            "  Buka agent tujuan di project yang sama; file di atas dibaca otomatis."
-        )
+        echo(f"  Source of truth: {SESSION_DIR}/session.json")
+        echo("  Open the target agent in the same project; it reads these files"
+             " on startup.")
     return EXIT_OK
 
 
@@ -176,9 +179,9 @@ def cmd_show(args: argparse.Namespace) -> int:
     session = load_session(root)
     if session is None:
         echo(
-            warn("Belum ada handoff untuk project ini.") + "\n"
-            f"  Buat yang pertama: {PROG} capture --goal \"...\" --from claude\n"
-            f"  Atau impor catatan lama: {PROG} import-log catatan.txt"
+            warn("No handoff found for this project.") + "\n"
+            f"  Create one: {PROG} capture --goal \"...\" --from claude\n"
+            f"  Or import old notes: {PROG} import-log notes.txt"
         )
         return EXIT_OK
 
@@ -191,8 +194,6 @@ def cmd_show(args: argparse.Namespace) -> int:
         echo(path.read_text(encoding="utf-8").rstrip())
     else:
         echo(render_handoff(session).rstrip())
-        if not args.quiet:
-            echo("", err=True)
     return EXIT_OK
 
 
@@ -202,27 +203,29 @@ def cmd_status(args: argparse.Namespace) -> int:
     session = load_session(root)
     if session is None:
         echo(
-            warn("Belum ada handoff untuk project ini.") + "\n"
-            f"  Mulai: {PROG} capture --goal \"...\" --from claude"
+            warn("No handoff found for this project.") + "\n"
+            f"  Start: {PROG} capture --goal \"...\" --from claude"
         )
         return EXIT_OK
 
     counts = session.counts()
-    goal = session.goal or "(belum diisi)"
-    progress = f"{counts['done']} done · {counts['decisions']} decisions"
+    goal = session.goal or "(not set)"
+    progress = (
+        f"{counts['done']} done · {_plural(counts['decisions'], 'decision')}"
+    )
     todos = session.todos
     if todos:
         next_todo = todos[0]
-        remaining = f"{len(todos)} todo — berikutnya: {next_todo}"
+        remaining = f"{_plural(len(todos), 'todo')} - next: {next_todo}"
     else:
-        remaining = "0 todo — tidak ada next step tercatat"
+        remaining = "no next steps recorded"
     echo(ok(f"goal         : {goal}"))
     echo(f"progress     : {progress}")
     echo(f"next steps   : {remaining}")
     echo(f"last agent   : {session.source_agent or '—'}")
     echo(f"last updated : {session.updated_at or '—'}")
     if not args.quiet:
-        echo(f"detail       : {PROG} show")
+        echo(f"details      : {PROG} show")
     return EXIT_OK
 
 
@@ -233,25 +236,25 @@ def cmd_import_log(args: argparse.Namespace) -> int:
         parsed = import_file(source)
     except FileNotFoundError:
         raise SessionError(
-            f"File tidak ditemukan: {source}\n"
-            "  Periksa path-nya, lalu jalankan lagi (contoh: handoff import-log catatan.txt)."
+            f"File not found: {source}\n"
+            "  Check the path and try again (e.g. handoff import-log notes.txt)."
         ) from None
     except IsADirectoryError:
         raise SessionError(
-            f"'{source}' adalah folder, bukan file.\n"
-            "  Arahkan ke file log/chat (mis. catatan.txt)."
+            f"'{source}' is a folder, not a file.\n"
+            "  Point it at a log/chat file (e.g. notes.txt)."
         ) from None
     except OSError as exc:
-        raise SessionError(f"Tidak bisa membaca {source}: {exc}") from None
+        raise SessionError(f"Could not read {source}: {exc}") from None
 
     if parsed.total == 0:
         raise SessionError(
-            f"Tidak ada baris yang dikenali di {source}.\n"
-            "  Format yang didukung (awali baris dengan label):\n"
-            "    Decision: Pakai JWT\n"
-            "    TODO: Tambahkan refresh token\n"
-            "    Done: Endpoint /login selesai\n"
-            "  Bahasa Indonesia juga didukung: Keputusan:, Selanjutnya:, Selesai:"
+            f"No recognised lines in {source}.\n"
+            "  Supported format (start the line with a label):\n"
+            "    Decision: Use JWT for auth\n"
+            "    TODO: Add refresh token\n"
+            "    Done: Login endpoint finished\n"
+            "  Indonesian labels work too: Keputusan:, Selanjutnya:, Selesai:"
         )
 
     session = capture_session(
@@ -262,21 +265,24 @@ def cmd_import_log(args: argparse.Namespace) -> int:
         notes="\n".join(parsed.notes),
     )
     if not args.quiet:
-        echo(ok(f"Import dari {source}"))
-        echo(
-            f"  +{len(parsed.decisions)} decision · +{len(parsed.todos)} todo · "
-            f"+{len(parsed.done)} done"
-            + (f" · +{len(parsed.notes)} note" if parsed.notes else "")
+        echo(ok(f"Imported from {source}"))
+        summary = (
+            f"  +{_plural(len(parsed.decisions), 'decision')} · "
+            f"+{_plural(len(parsed.todos), 'todo')} · "
+            f"+{_plural(len(parsed.done), 'done', suffix='')}"
         )
-        echo(f"  Session sekarang: {_fmt_counts(session)}")
-        echo(f"  Lihat: {PROG} show    ·    Bagikan: {PROG} export --to all")
+        if parsed.notes:
+            summary += f" · +{_plural(len(parsed.notes), 'note')}"
+        echo(summary)
+        echo(f"  Session now: {_fmt_counts(session)}")
+        echo(f"  Review: {PROG} show    ·    Share: {PROG} export --to all")
     return EXIT_OK
 
 
 def cmd_init(args: argparse.Namespace) -> int:
     root = _resolve_root(args)
     if root.exists() and not root.is_dir():
-        raise SessionError(f"'{root}' bukan folder.")
+        raise SessionError(f"'{root}' is not a folder.")
     root.mkdir(parents=True, exist_ok=True)
     directory = root / SESSION_DIR
     directory.mkdir(parents=True, exist_ok=True)
@@ -302,27 +308,27 @@ def cmd_init(args: argparse.Namespace) -> int:
             gitignore_added = True
 
     if not args.quiet:
-        echo(ok(f"Siap di {root}"))
-        detail = f" ({', '.join(created)})" if created else " (sudah ada)"
+        echo(ok(f"Ready in {root}"))
+        detail = f" ({', '.join(created)})" if created else " (already exists)"
         echo(f"  folder: {SESSION_DIR}/" + detail)
         if args.gitignore:
             echo(
                 f"  .gitignore: {SESSION_DIR}/ "
-                + ("ditambahkan" if gitignore_added else "sudah ada")
+                + ("added" if gitignore_added else "already present")
             )
         existing_agents = [
             name for name, path in AGENT_FILE_HINTS.items() if (root / path).exists()
         ]
         if existing_agents:
-            echo(f"  agent terdeteksi: {', '.join(existing_agents)}")
+            echo(f"  detected agents: {', '.join(existing_agents)}")
         echo("")
-        echo("Langkah berikutnya:")
-        echo(f"  1. {PROG} capture --goal \"tujuan project\" --from claude")
+        echo("Next steps:")
+        echo(f"  1. {PROG} capture --goal \"what this project is building\" --from claude")
         echo(f"  2. {PROG} export --to all")
-        echo("  3. Buka agent lain di folder ini — ia membaca file konteksnya sendiri")
+        echo("  3. Open another agent in this folder; it reads its own context file")
         echo("")
-        echo("Catatan: default-nya SEMUA file boleh di-commit (tim ikut dapat konteks).")
-        echo(f"        Jalankan '{PROG} init --gitignore' bila state ingin lokal saja.")
+        echo("Note: by default every generated file is commit-friendly (teams share context).")
+        echo(f"      Run '{PROG} init --gitignore' to keep the session local instead.")
     return EXIT_OK
 
 
@@ -330,13 +336,13 @@ def cmd_scan_todos(args: argparse.Namespace) -> int:
     root = _resolve_root(args)
     todos = scan_todos(root, limit=args.limit)
     if not todos:
-        echo(warn("Tidak ada TODO/FIXME di source code."))
+        echo(warn("No TODO/FIXME comments found in the source code."))
         return EXIT_OK
-    echo(f"{len(todos)} TODO/FIXME ditemukan:")
+    echo(f"{len(todos)} TODO/FIXME comment(s) found:")
     for item in todos:
         echo(f"  - {item}")
     if not args.quiet:
-        echo(f"  Tambahkan ke session: {PROG} capture --scan-todos")
+        echo(f"  Add them to the session: {PROG} capture --scan-todos")
     return EXIT_OK
 
 
@@ -356,7 +362,7 @@ def build_parser() -> argparse.ArgumentParser:
             f"  {PROG} export --to codex\n"
             f"  {PROG} export --to all\n"
             f"  {PROG} show\n"
-            f"  {PROG} import-log catatan.txt\n"
+            f"  {PROG} import-log notes.txt\n"
             f"  {PROG} status\n"
             f"  {PROG} init\n"
             "\nDocs: https://github.com/FaaWeell/AgentHandoff"
@@ -530,13 +536,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         return int(args.func(args))
     except (SessionError, AdapterError) as exc:
-        echo(fail("Gagal."), err=True)
+        echo(fail("Failed."), err=True)
         for line in str(exc).splitlines():
             echo(f"  {line}" if not line.startswith("  ") else line, err=True)
         return EXIT_USER_ERROR
     except KeyboardInterrupt:  # pragma: no cover
         echo("", err=True)
-        echo(fail("Dibatalkan."), err=True)
+        echo(fail("Cancelled."), err=True)
         return 130
     except BrokenPipeError:  # pragma: no cover
         return EXIT_OK

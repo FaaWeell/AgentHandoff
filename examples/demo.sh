@@ -32,19 +32,19 @@ echo "src/auth.py  requirements.txt"
 
 banner "2. Capture the session (git snapshot is automatic)"
 "$HANDOFF" capture \
-  --goal "Menyelesaikan fitur login" \
+  --goal "Finish the login feature" \
   --from claude \
-  --decision "Pakai JWT :: stateless, cocok untuk API" \
-  --todo "Tambahkan refresh token" \
-  --todo "Tulis test untuk /login" \
-  --done "Endpoint /login selesai" \
-  --notes "Deploy target Railway"
+  --decision "Use JWT :: stateless, fits our API" \
+  --todo "Add refresh token" \
+  --todo "Write tests for /login" \
+  --done "Login endpoint finished" \
+  --notes "Deploy target is Railway"
 
 banner "3. Export to the next agent — one command"
 "$HANDOFF" export --to codex
 
 banner "4. What the new agent reads (AGENTS.md)"
-sed -n '1,28p' AGENTS.md
+sed -n '1,40p' AGENTS.md
 
 banner "5. It is idempotent — run it again, still exactly one block"
 "$HANDOFF" export --to all --quiet
@@ -56,4 +56,4 @@ banner "6. Import an old chat log"
 banner "7. Five-line status"
 "$HANDOFF" status
 
-banner "Done — switch agents without re-briefing. ⭐ github.com/FaaWeell/AgentHandoff"
+banner "Done. Switch agents without re-briefing. github.com/FaaWeell/AgentHandoff"

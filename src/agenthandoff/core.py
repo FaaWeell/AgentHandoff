@@ -166,7 +166,7 @@ class Session:
     @classmethod
     def from_dict(cls, data: Mapping[str, Any]) -> Session:
         if not isinstance(data, Mapping):
-            raise SessionError("session.json harus berisi object JSON (dict).")
+            raise SessionError("session.json must contain a JSON object.")
         schema_version = data.get("schema_version", SCHEMA_VERSION)
         try:
             schema_version = int(schema_version)
@@ -274,8 +274,8 @@ def project_root(path: str | Path | None = None) -> Path:
         root = Path(os.path.abspath(str(root)))
     if root.exists() and not root.is_dir():
         raise SessionError(
-            f"'{root}' adalah file, bukan folder project.\n"
-            "  Gunakan --path ke folder project yang valid."
+            f"'{root}' is a file, not a project folder.\n"
+            "  Pass --path pointing at a valid project folder."
         )
     return root
 
@@ -340,24 +340,24 @@ def load_session(root: Path | str, required: bool = False) -> Session | None:
     if not path.exists():
         if required:
             raise SessionError(
-                "Belum ada handoff untuk project ini.\n"
-                "  Mulai dengan: handoff capture --goal \"apa yang sedang dikerjakan\""
+                "No handoff found for this project.\n"
+                "  Start with: handoff capture --goal \"what you are working on\""
             )
         return None
     try:
         raw = path.read_text(encoding="utf-8")
     except OSError as exc:
-        raise SessionError(f"Tidak bisa membaca {path}: {exc}") from exc
+        raise SessionError(f"Could not read {path}: {exc}") from exc
     if not raw.strip():
         raise SessionError(
-            f"{path} kosong. Hapus file tersebut lalu jalankan 'handoff capture' lagi."
+            f"{path} is empty. Delete it and run 'handoff capture' again."
         )
     try:
         data = json.loads(raw)
     except json.JSONDecodeError as exc:
         raise SessionError(
-            f"{path} bukan JSON yang valid (baris {exc.lineno}, kolom {exc.colno}).\n"
-            "  Perbaiki file tersebut, atau hapus lalu jalankan 'handoff capture' lagi."
+            f"{path} is not valid JSON (line {exc.lineno}, column {exc.colno}).\n"
+            "  Fix the file, or delete it and run 'handoff capture' again."
         ) from exc
     try:
         return Session.from_dict(data)
@@ -372,7 +372,7 @@ def save_session(root: Path | str, session: Session) -> Path:
     try:
         atomic_write_text(path, payload)
     except OSError as exc:
-        raise SessionError(f"Tidak bisa menulis {path}: {exc}") from exc
+        raise SessionError(f"Could not write {path}: {exc}") from exc
     return path
 
 
@@ -558,5 +558,5 @@ def write_handoff(root: Path | str, session: Session) -> Path:
     try:
         atomic_write_text(path, render_handoff(session))
     except OSError as exc:  # pragma: no cover - permissions
-        raise SessionError(f"Tidak bisa menulis {path}: {exc}") from exc
+        raise SessionError(f"Could not write {path}: {exc}") from exc
     return path

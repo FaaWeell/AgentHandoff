@@ -274,7 +274,7 @@ class TestStorage:
             load_session(project)
         message = str(excinfo.value)
         assert SESSION_FILE in message
-        assert "bukan JSON yang valid" in message
+        assert "is not valid JSON" in message
         assert "handoff capture" in message
 
     def test_empty_session_file_gives_friendly_error(self, project: Path) -> None:
@@ -283,7 +283,7 @@ class TestStorage:
         path.write_text("   \n", encoding="utf-8")
         with pytest.raises(SessionError) as excinfo:
             load_session(project)
-        assert "kosong" in str(excinfo.value)
+        assert "is empty" in str(excinfo.value)
 
     def test_json_list_is_rejected(self, project: Path) -> None:
         path = session_path(project)
@@ -326,7 +326,7 @@ class TestStorage:
         file_path.write_text("x", encoding="utf-8")
         with pytest.raises(SessionError) as excinfo:
             project_root(file_path)
-        assert "bukan folder project" in str(excinfo.value)
+        assert "not a project folder" in str(excinfo.value)
 
     def test_project_root_defaults_to_cwd(self, tmp_path: Path, monkeypatch) -> None:
         monkeypatch.chdir(tmp_path)

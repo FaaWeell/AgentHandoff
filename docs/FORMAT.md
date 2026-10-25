@@ -18,16 +18,16 @@ single source of truth, and every other output (`.agent-handoff/HANDOFF.md`,
 {
   "schema_version": 1,
   "project": "my-app",
-  "goal": "Menyelesaikan fitur login",
+  "goal": "Finish the login feature",
   "source_agent": "claude",
   "created_at": "2026-10-25T10:00:00+07:00",
   "updated_at": "2026-10-25T12:30:00+07:00",
   "decisions": [
-    { "text": "Pakai JWT", "reason": "stateless, cocok untuk API" }
+    { "text": "Use JWT", "reason": "stateless, fits our API" }
   ],
-  "todos": ["Tambahkan refresh token", "Tulis test untuk /login"],
-  "done": ["Endpoint /login selesai"],
-  "notes": "Catatan bebas…",
+  "todos": ["Add refresh token", "Write tests for /login"],
+  "done": ["Login endpoint finished"],
+  "notes": "Deploy target is Railway.",
   "git": {
     "is_repo": true,
     "branch": "feat/login",
@@ -53,7 +53,7 @@ single source of truth, and every other output (`.agent-handoff/HANDOFF.md`,
 | `decisions` | array of object | yes | `{ "text": string, "reason": string }`. `reason` may be `""`. |
 | `todos` | array of string | yes | Next steps, in the order they were recorded. |
 | `done` | array of string | yes | Completed items. Never overlaps with `todos`. |
-| `notes` | string | yes | Free-form Markdown-ish text; appended on merge. |
+| `notes` | string | yes | Free-form text; appended on merge. |
 | `git` | object | yes | Snapshot; `{"is_repo": false}` when not in a git repository. |
 
 ### `git` object

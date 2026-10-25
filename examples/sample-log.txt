@@ -1,24 +1,30 @@
-# Sample chat/log export — paste your own agent conversation here.
-# AgentHandoff reads lines that START with a label; everything else is ignored.
+# Sample chat or log file for `handoff import-log`.
+# AgentHandoff only reads lines that START with a label. Everything else is
+# ignored, so you can paste a whole conversation export here.
 #
 # English labels:  Decision:  TODO:  Done:  Note:
+#                  (also: Next steps:, Completed:)
 # Indonesian:      Keputusan: Selanjutnya: Selesai: Catatan:
-# (Also accepted: Berikutnya:, Rencana:, Sudah:, Next steps:)
+#                  (also: Berikutnya:, Rencana:, Sudah:)
 
-Session with Claude Code — 2026-10-25
+Session with Claude Code - 2026-10-25
 
-Decision: Pakai JWT :: stateless, cocok untuk API
-Decision: Pakai bcrypt :: standar industri untuk hashing password
-Keputusan: Refresh token pakai rotating strategy :: lebih aman dari token statis
+Decision: Use JWT :: stateless, fits our API
+Decision: Use bcrypt :: industry standard for password hashing
 
-Done: Endpoint /login selesai
-Selesai: Setup struktur project
+Done: Login endpoint finished
+Done: Set up the project structure
 
-TODO: Tambahkan refresh token
-Selanjutnya: Tulis test untuk /login
-- Berikutnya: Validasi input form
+TODO: Add refresh token
+TODO: Write tests for /login
+- Next steps: Validate the form input
 
-Catatan: Deploy target Railway, review hari Senin
+Note: Deploy target is Railway, review on Monday
 
-Human: sounds good, but what about rate limiting?
-Assistant: Good point — I noted it as a follow-up.
+# Indonesian labels work in the same file, because many teams write in both.
+Keputusan: Rotating refresh token :: lebih aman dari token statis
+Selanjutnya: Tulis dokumentasi API
+Selesai: Setup CI
+
+Human: sounds good, what about rate limiting?
+Assistant: Good point, I added it as a follow-up item.
