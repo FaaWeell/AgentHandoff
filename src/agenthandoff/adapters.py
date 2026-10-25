@@ -135,9 +135,9 @@ def resolve_target(name: str) -> Adapter:
     canonical = ALIASES.get(key)
     if canonical is None:
         raise AdapterError(
-            f"Target agent tidak dikenal: '{name}'.\n"
-            f"  Target yang tersedia: {', '.join(TARGET_NAMES)}\n"
-            "  Gunakan '--to all' untuk mengekspor ke semua target."
+            f"Unknown agent target: '{name}'.\n"
+            f"  Available targets: {', '.join(TARGET_NAMES)}\n"
+            "  Use '--to all' to export to every target."
         )
     return TARGETS[canonical]
 
@@ -160,8 +160,8 @@ def resolve_targets(names: Sequence[str] | str) -> list[Adapter]:
                     resolved.append(adapter)
     if not resolved:
         raise AdapterError(
-            "Tidak ada target yang dipilih.\n"
-            f"  Contoh: handoff export --to {TARGET_NAMES[0]}  (atau --to all)"
+            "No target selected.\n"
+            f"  Example: handoff export --to {TARGET_NAMES[0]}  (or --to all)"
         )
     return resolved
 
@@ -189,9 +189,10 @@ def _marker_spans(text: str) -> list[tuple[int, int]]:
         end = text.find(END_MARKER, begin + len(BEGIN_MARKER))
         if end == -1:
             raise AdapterError(
-                "File sudah berisi marker 'agent-handoff:begin' tanpa 'agent-handoff:end'.\n"
-                "  Perbaiki/hapus blok tersebut secara manual, lalu jalankan export lagi.\n"
-                "  (AgentHandoff tidak akan menebak dan menimpa konten Anda.)"
+                "The file already has an 'agent-handoff:begin' marker without a "
+                "matching 'agent-handoff:end'.\n"
+                "  Fix or remove that block manually, then run the export again.\n"
+                "  (AgentHandoff will not guess and overwrite your content.)"
             )
         stop = end + len(END_MARKER)
         # Swallow a trailing newline so replacement does not accumulate blanks.
@@ -348,7 +349,7 @@ def _read_existing(path: Path) -> str | None:
     if not path.exists():
         return None
     if not path.is_file():
-        raise AdapterError(f"'{path}' ada tetapi bukan file — export dibatalkan.")
+        raise AdapterError(f"'{path}' exists but is not a file - export aborted.")
     try:
         # newline="" keeps CRLF files CRLF (no silent whole-file rewrite).
         # Decoding is strict on purpose: replacing undecodable bytes would
@@ -357,12 +358,12 @@ def _read_existing(path: Path) -> str | None:
             return handle.read()
     except UnicodeDecodeError as exc:
         raise AdapterError(
-            f"{path} bukan file UTF-8 (byte tidak valid di offset {exc.start}).\n"
-            "  Export dibatalkan agar isi file tidak rusak.\n"
-            "  Ubah encoding-nya ke UTF-8, atau pilih target lain (mis. --to gemini)."
+            f"{path} is not a UTF-8 file (invalid byte at offset {exc.start}).\n"
+            "  Export aborted so the file is left untouched.\n"
+            "  Convert it to UTF-8, or pick another target (e.g. --to gemini)."
         ) from exc
     except OSError as exc:
-        raise AdapterError(f"Tidak bisa membaca {path}: {exc}") from exc
+        raise AdapterError(f"Could not read {path}: {exc}") from exc
 
 
 def export_target(
@@ -382,7 +383,7 @@ def export_target(
         try:
             atomic_write_text(path, rendered)
         except OSError as exc:
-            raise AdapterError(f"Tidak bisa menulis {path}: {exc}") from exc
+            raise AdapterError(f"Could not write {path}: {exc}") from exc
         return ExportResult(adapter.name, path, "updated" if existing is not None else "created")
 
     existing = _read_existing(path)
@@ -399,7 +400,7 @@ def export_target(
     try:
         atomic_write_text(path, merged)
     except OSError as exc:
-        raise AdapterError(f"Tidak bisa menulis {path}: {exc}") from exc
+        raise AdapterError(f"Could not write {path}: {exc}") from exc
     return ExportResult(adapter.name, path, "created" if created else "updated")
 
 

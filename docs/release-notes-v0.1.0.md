@@ -11,9 +11,9 @@ AgentHandoff makes that a two-command, ten-second job.
 pip install agenthandoff
 
 handoff capture --goal "Add login" --from claude \
-  --decision "Pakai JWT :: stateless, cocok untuk API" \
+  --decision "Use JWT :: stateless, fits our API" \
   --todo "Add refresh token" \
-  --done "Endpoint /login selesai"
+  --done "Login endpoint finished"
 
 handoff export --to codex      # writes AGENTS.md — or --to all
 ```

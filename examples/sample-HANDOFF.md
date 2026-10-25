@@ -6,49 +6,49 @@
 | --- | --- |
 | Project | `my-app` |
 | Last agent | claude |
-| Updated | 2026-10-25T03:08:54+00:00 |
-| Created | 2026-10-25T03:08:54+00:00 |
+| Updated | 2026-10-25T03:39:03+00:00 |
+| Created | 2026-10-25T03:39:03+00:00 |
 
 ## 🎯 Goal
 
-Menyelesaikan fitur login
+Finish the login feature
 
 ## 🌿 Git state
 
 - **Branch:** `master`
-- **Last commit:** `f28dfd5 feat: project scaffold`
+- **Last commit:** `0e4b77d feat: project scaffold`
 - **Changed files:** 2
   - `src/auth.py`
   - `.agent-handoff/`
 - **Recent commits:**
-  - `f28dfd5 feat: project scaffold`
+  - `0e4b77d feat: project scaffold`
 - **Diff stat:**
 
 ```text
-src/auth.py | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+src/auth.py | 1 +
+ 1 file changed, 1 insertion(+)
 ```
 
 ## ✅ Done
 
-- [x] Endpoint /login selesai
-- [x] Setup struktur project
+- [x] Login endpoint finished
+- [x] Set up the project structure
 
 ## 🧭 Decisions (and why)
 
-- **Pakai JWT** — stateless, cocok untuk API
-- **Pakai bcrypt** — standar industri untuk hashing password
+- **Use JWT** — stateless, fits our API
+- **Use bcrypt** — industry standard for password hashing
 
 ## ⏭️ Next steps
 
-- [ ] Tambahkan refresh token
-- [ ] Tulis test untuk /login
-- [ ] Validasi input form
+- [ ] Add refresh token
+- [ ] Write tests for /login
+- [ ] Validate the form input
 - [ ] src/auth.py:2 — TODO: hash the password
 
 ## 📝 Notes
 
-Rapat dengan tim: refresh token pakai rotating strategy. Deploy target: Railway.
+Team decision: use a rotating refresh token strategy. Deploy target is Railway.
 
 ---
 

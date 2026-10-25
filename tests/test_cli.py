@@ -76,7 +76,7 @@ class TestCaptureCommand:
         )
         out = capsys.readouterr().out
         assert code == 0
-        assert "Handoff diperbarui" in out
+        assert "Handoff updated" in out
         assert session_path(project).is_file()
         assert handoff_path(project).is_file()
         data = json.loads(session_path(project).read_text(encoding="utf-8"))
@@ -98,7 +98,7 @@ class TestCaptureCommand:
 
     def test_capture_warns_when_empty(self, project: Path, capsys) -> None:
         run("capture", "--path", str(project))
-        assert "masih kosong" in capsys.readouterr().out
+        assert "still empty" in capsys.readouterr().out
 
     def test_capture_warns_outside_git(self, project: Path, capsys) -> None:
         run("capture", "--goal", "g", "--path", str(project))
@@ -126,8 +126,8 @@ class TestCaptureCommand:
         file_path.write_text("x", encoding="utf-8")
         assert run("capture", "--goal", "g", "--path", str(file_path)) == 1
         err = capsys.readouterr().err
-        assert "Gagal" in err
-        assert "bukan folder project" in err
+        assert "Failed" in err
+        assert "not a project folder" in err
 
     def test_corrupt_json_is_a_friendly_error(self, project: Path, capsys) -> None:
         path = session_path(project)
@@ -135,7 +135,7 @@ class TestCaptureCommand:
         path.write_text("{not json", encoding="utf-8")
         assert run("capture", "--goal", "g", "--path", str(project)) == 1
         err = capsys.readouterr().err
-        assert "bukan JSON yang valid" in err
+        assert "is not valid JSON" in err
         assert "Traceback" not in err
 
 
@@ -178,7 +178,7 @@ class TestExportCommand:
     def test_export_without_session_is_friendly(self, project: Path, capsys) -> None:
         assert run("export", "--to", "all", "--path", str(project)) == 1
         err = capsys.readouterr().err
-        assert "Belum ada handoff" in err
+        assert "No handoff found" in err
         assert "handoff capture" in err
 
     def test_export_is_idempotent_from_cli(self, project: Path, capsys) -> None:
@@ -205,7 +205,7 @@ class TestShowStatus:
     def test_show_without_session_is_friendly(self, project: Path, capsys) -> None:
         assert run("show", "--path", str(project)) == 0
         out = capsys.readouterr().out
-        assert "Belum ada handoff" in out
+        assert "No handoff found" in out
         assert "handoff capture" in out
 
     def test_show_prints_handoff(self, project: Path, capsys) -> None:
@@ -260,13 +260,13 @@ class TestShowStatus:
 
     def test_status_without_session(self, project: Path, capsys) -> None:
         assert run("status", "--path", str(project)) == 0
-        assert "Belum ada handoff" in capsys.readouterr().out
+        assert "No handoff found" in capsys.readouterr().out
 
     def test_status_without_todos(self, project: Path, capsys) -> None:
         run("capture", "--goal", "g", "--path", str(project), "--quiet")
         capsys.readouterr()
         run("status", "--path", str(project), "--quiet")
-        assert "tidak ada next step" in capsys.readouterr().out
+        assert "no next steps recorded" in capsys.readouterr().out
 
 
 class TestImportLogCommand:
@@ -275,7 +275,7 @@ class TestImportLogCommand:
         log.write_text("Decision: Use JWT\nTODO: Add token\nDone: Login\n", encoding="utf-8")
         assert run("import-log", str(log), "--path", str(project)) == 0
         out = capsys.readouterr().out
-        assert "Import dari" in out
+        assert "Imported from" in out
         data = json.loads(session_path(project).read_text(encoding="utf-8"))
         assert data["decisions"][0]["text"] == "Use JWT"
         assert data["todos"] == ["Add token"]
@@ -314,18 +314,18 @@ class TestImportLogCommand:
     def test_import_missing_file(self, project: Path, tmp_path: Path, capsys) -> None:
         assert run("import-log", str(tmp_path / "nope.txt"), "--path", str(project)) == 1
         err = capsys.readouterr().err
-        assert "tidak ditemukan" in err.lower()
+        assert "file not found" in err.lower()
 
     def test_import_directory(self, project: Path, tmp_path: Path, capsys) -> None:
         assert run("import-log", str(tmp_path), "--path", str(project)) == 1
-        assert "bukan file" in capsys.readouterr().err
+        assert "not a file" in capsys.readouterr().err
 
     def test_import_unrecognised_file(self, project: Path, tmp_path: Path, capsys) -> None:
         log = tmp_path / "log.txt"
         log.write_text("just some prose\nnothing to see\n", encoding="utf-8")
         assert run("import-log", str(log), "--path", str(project)) == 1
         err = capsys.readouterr().err
-        assert "Tidak ada baris yang dikenali" in err
+        assert "No recognised lines" in err
         assert "Decision:" in err
 
 
@@ -334,7 +334,7 @@ class TestInitCommand:
         assert run("init", "--path", str(project)) == 0
         assert (project / SESSION_DIR).is_dir()
         out = capsys.readouterr().out
-        assert "Siap di" in out
+        assert "Ready in" in out
         assert "handoff capture" in out
 
     def test_init_detects_existing_agent_files(self, project: Path, capsys) -> None:
@@ -374,7 +374,7 @@ class TestScanTodosCommand:
 
     def test_scan_empty(self, project: Path, capsys) -> None:
         assert run("scan-todos", "--path", str(project)) == 0
-        assert "Tidak ada TODO/FIXME" in capsys.readouterr().out
+        assert "No TODO/FIXME" in capsys.readouterr().out
 
     def test_scan_limit(self, project: Path, capsys) -> None:
         (project / "a.py").write_text(

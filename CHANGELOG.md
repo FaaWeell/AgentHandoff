@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- All user-facing CLI output and error messages are now in English, so the tool
+  reads the same way for every user. Log import still accepts both English and
+  Indonesian labels.
+- `README.md` rewritten: English only, plainer wording, fewer emoji.
+  `README.id.md` removed.
+- Added `docs/TESTING.md`, a step-by-step manual verification guide.
+- Example content in `docs/`, `examples/` and the repository's own session file
+  translated to English.
+
 ### Planned for v0.2
 - `handoff init` wizard polish (interactive agent selection).
 - Richer `handoff status` with per-agent export state.
@@ -48,7 +58,7 @@ context file.
 - **Developer ergonomics** — friendly, actionable error messages (missing
   session, corrupt JSON, unknown target, missing log file), `--path` on every
   command, `--quiet`, `--version`, complete `--help` for every subcommand.
-- Docs: `README.md` (+ `README.id.md`), `CONTRIBUTING.md`, `docs/FORMAT.md`
+- Docs: `README.md`, `CONTRIBUTING.md`, `docs/FORMAT.md`, `docs/TESTING.md`
   (session.json schema v1), `docs/ROADMAP.md`, `docs/LAUNCH.md`, examples.
 - CI: GitHub Actions matrix — Ubuntu/macOS/Windows × Python 3.11/3.12/3.13,
   coverage gate at 80% (currently ~94%).
